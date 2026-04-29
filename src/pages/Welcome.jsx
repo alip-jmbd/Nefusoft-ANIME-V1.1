@@ -75,7 +75,7 @@ const Welcome = () => {
                 <div className="absolute top-[60px] inset-x-0 bg-white rounded-2xl overflow-hidden z-[100] max-h-64 shadow-2xl overflow-y-auto custom-scrollbar">
                   {liveResults.map(r => (
                     <div key={r.id} onClick={() => navigate(`/anime/${r.id}-${(r.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} className="flex items-center gap-4 p-3 hover:bg-gray-100 border-b border-gray-100 cursor-pointer text-left transition-colors">
-                      <img src={r.image_poster} alt={r.title} width="40" height="55" loading="lazy" decoding="async" className="w-10 rounded-md shadow-sm" />
+                      <img src={r.image_poster} referrerPolicy="no-referrer" alt={r.title} width="40" height="55" loading="lazy" decoding="async" className="w-10 rounded-md shadow-sm" />
                       <div className="flex flex-col"><span className="text-black font-black text-xs line-clamp-1">{r.title}</span><span className="text-gray-500 font-bold text-[9px] uppercase mt-1 tracking-wider">{r.type} • {r.status}</span></div>
                     </div>
                   ))}

@@ -66,7 +66,7 @@ const ScheduleCard = ({ a, onClick, index }) => {
       </div>
       <div className="flex-1 py-4 w-full min-w-0">
         <div onClick={onClick} className="relative rounded-xl flex p-3 md:p-4 gap-4 md:gap-5 cursor-pointer transition-all active:scale-[0.98] bg-[#16161a] border border-white/5 hover:border-[#F6CF80]/30 group/card overflow-hidden shadow-xl">
-          <img src={a.image_poster} className="w-20 md:w-24 aspect-[3/4] object-cover rounded-md shadow-2xl shrink-0 group-hover/card:scale-105 transition-transform duration-500 relative z-10" />
+          <img src={a.image_poster} referrerPolicy="no-referrer" className="w-20 md:w-24 aspect-[3/4] object-cover rounded-md shadow-2xl shrink-0 group-hover/card:scale-105 transition-transform duration-500 relative z-10" />
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative z-10">
             <div className="mb-2">
               <span className="bg-[#F6CF80] text-black text-[9px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider">

@@ -107,7 +107,7 @@ const Navbar = () => {
             ) : liveResults.length > 0 ? (
               liveResults.map(r => (
                 <div key={r.id} onClick={() => { navigate(`/anime/${r.id}-${(r.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`); setIsSearchOpen(false); }} className="flex items-center gap-4 p-3 hover:bg-white/5 cursor-pointer border-b border-white/5 transition-colors">
-                  <img src={r.image_poster} className="w-10 aspect-[3/4.5] object-cover rounded-md shadow-md" />
+                  <img src={r.image_poster} referrerPolicy="no-referrer" className="w-10 aspect-[3/4.5] object-cover rounded-md shadow-md" />
                   <div className="flex flex-col">
                     <span className="text-white font-bold text-xs line-clamp-1">{r.title}</span>
                     <span className="text-white/40 font-bold text-[9px] mt-1">{r.type} • {r.status}</span>

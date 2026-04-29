@@ -524,7 +524,7 @@ const Watch = () => {
 
                   {!hasStarted && anime?.image_cover && (
                     <div className="absolute inset-0 z-0">
-                      <img src={anime.image_cover} alt="Thumbnail" className="w-full h-full object-cover opacity-60" />
+                      <img src={anime.image_cover} referrerPolicy="no-referrer" alt="Thumbnail" className="w-full h-full object-cover opacity-60" />
                       <div className="absolute inset-0 bg-black/40"></div>
                     </div>
                   )}
@@ -746,7 +746,7 @@ const Watch = () => {
 
             <div className="relative bg-[#16161a] p-5 md:p-6 rounded-xl border border-white/5 mb-8 overflow-hidden shadow-xl">
                <div className="absolute inset-0 z-0">
-                  <img src={anime.image_cover || anime.image_poster} alt="" className="w-full h-full object-cover opacity-40" />
+                  <img src={anime.image_cover || anime.image_poster} referrerPolicy="no-referrer" alt="" className="w-full h-full object-cover opacity-40" />
                   <div className="absolute inset-0 bg-gradient-to-r from-[#16161a] via-[#16161a]/90 to-transparent"></div>
                </div>
                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -796,12 +796,12 @@ const Watch = () => {
             {anime && (
               <div className="mb-8 relative bg-[#16161a] rounded-sm border border-white/5 overflow-hidden shadow-xl flex flex-col items-center md:items-start">
                 <div className="absolute inset-0 z-0">
-                  <img src={anime.image_cover || anime.image_poster} alt="Banner" className="w-full h-full object-cover blur-md opacity-20" />
+                  <img src={anime.image_cover || anime.image_poster} referrerPolicy="no-referrer" alt="Banner" className="w-full h-full object-cover blur-md opacity-20" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#16161a] via-[#16161a]/90 to-transparent"></div>
                 </div>
 
                 <div className="relative z-10 p-6 flex flex-col md:flex-row gap-6 w-full items-center md:items-start">
-                  <img src={anime.image_poster} alt={anime.title} className="w-32 md:w-48 aspect-[3/4.2] object-cover rounded-sm shadow-[0_15px_30px_rgba(0,0,0,0.5)] shrink-0" />
+                   <img src={anime.image_poster} referrerPolicy="no-referrer" alt={anime.title} className="w-32 md:w-48 aspect-[3/4.2] object-cover rounded-sm shadow-[0_15px_30px_rgba(0,0,0,0.5)] shrink-0" />
                   <div className="flex flex-col flex-1 w-full text-center md:text-left">
                     <h2 className="text-xl md:text-3xl font-black text-white mb-2 leading-tight tracking-tighter">{anime.title}</h2>
                     <p className="text-white/50 text-[10px] md:text-xs mb-5 font-bold uppercase tracking-widest">{anime.synonyms}</p>
@@ -857,10 +857,10 @@ const Watch = () => {
                 <div key={a.id} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} className="group cursor-pointer relative h-20 md:h-24 rounded-sm bg-[#16161a] border border-white/5 flex items-center px-4 overflow-hidden transition-transform active:scale-[0.98]">
                   <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-1/3 z-0">
                     <div className="absolute inset-0 bg-gradient-to-r from-[#16161a] via-[#16161a]/80 to-transparent z-10"></div>
-                    <img src={a.image_cover || a.image_poster} className="w-full h-full object-cover opacity-40 group-hover:opacity-80 transition-opacity duration-500" />
+                    <img src={a.image_cover || a.image_poster} referrerPolicy="no-referrer" className="w-full h-full object-cover opacity-40 group-hover:opacity-80 transition-opacity duration-500" />
                   </div>
                   <div className="relative z-20 flex items-center gap-4 w-full">
-                    <img src={a.image_poster} className="w-12 md:w-16 aspect-[3/4.2] object-cover rounded-sm shadow-lg group-hover:scale-105 transition-transform" />
+                    <img src={a.image_poster} referrerPolicy="no-referrer" className="w-12 md:w-16 aspect-[3/4.2] object-cover rounded-sm shadow-lg group-hover:scale-105 transition-transform" />
                     <div className="flex flex-col">
                       <h3 className="text-white font-bold text-[11px] md:text-sm line-clamp-1 group-hover:text-[#F6CF80] transition-colors">{a.title}</h3>
                       <div className="flex items-center gap-2 mt-2">
