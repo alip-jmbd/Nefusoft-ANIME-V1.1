@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/alip-jmbd/alipp/main/icon-rbg.png" alt="NefuSoft Logo" width="150" />
+  <img src="https://raw.githubusercontent.com/alip-jmbd/alipp/main/icon-rbg.png" alt="NimeStream Logo" width="150" />
 
-  # NefuSoft Anime
+  # NimeStream Anime
   **Platform Streaming Anime Subtitle Indonesia Gratis & Tanpa Iklan**
 
   [![React](https://img.shields.io/badge/React-19.2.4-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
@@ -12,7 +12,7 @@
 
 ## 📖 Tentang Projek
 
-NefuSoft adalah aplikasi web *open-source* untuk *streaming* anime dengan *subtitle* Indonesia. Platform ini dirancang dengan antarmuka yang sangat modern, responsif, dan ringan, memberikan pengalaman menonton terbaik tanpa gangguan iklan pop-up yang mengganggu. 
+NimeStream adalah aplikasi web *open-source* untuk *streaming* anime dengan *subtitle* Indonesia. Platform ini dirancang dengan antarmuka yang sangat modern, responsif, dan ringan, memberikan pengalaman menonton terbaik tanpa gangguan iklan pop-up yang mengganggu.
 
 Aplikasi ini dikembangkan sebagai *Single Page Application* (SPA) menggunakan ekosistem *web development* terbaru, menjadikannya sangat cepat dan optimal. Data anime dan pemutaran video sepenuhnya disediakan oleh *API* dari pihak ketiga.
 
@@ -44,7 +44,7 @@ Proyek ini dibangun menggunakan *tech-stack* modern:
 
 ## 🚀 Cara Instalasi & Menjalankan di Lokal
 
-Ikuti langkah-langkah berikut untuk menjalankan NefuSoft di perangkat Anda:
+Ikuti langkah-langkah berikut untuk menjalankan NimeStream di perangkat Anda:
 
 1. **Clone Repository**
    ```bash
@@ -77,7 +77,7 @@ Ikuti langkah-langkah berikut untuk menjalankan NefuSoft di perangkat Anda:
 ## 📂 Struktur Direktori Utama
 
 ```text
-Nefusoft/
+NimeStream/
 ├── public/             # Aset statis publik (gambar banner, logo, dll)
 ├── src/
 │   ├── assets/         # Aset khusus framework
@@ -104,7 +104,7 @@ Karena proyek ini bersifat *open-source*, kami sangat menyambut partisipasi dari
 
 ## ⚠️ Disclaimer
 
-**NefuSoft** adalah aplikasi berbasis antarmuka klien (*client-side web application*) buatan pihak ketiga. Kami **TIDAK** mengunggah, menyimpan, atau mendistribusikan file video atau konten multimedia apa pun di dalam server kami. Seluruh konten, data, dan media disediakan oleh API pihak ketiga secara dinamis yang tidak berafiliasi langsung dengan proyek ini. Proyek ini dibuat untuk tujuan pembelajaran (*educational purpose*) dan *portfolio*.
+**NimeStream** adalah aplikasi berbasis antarmuka klien (*client-side web application*) buatan pihak ketiga. Kami **TIDAK** mengunggah, menyimpan, atau mendistribusikan file video atau konten multimedia apa pun di dalam server kami. Seluruh konten, data, dan media disediakan oleh API pihak ketiga secara dinamis yang tidak berafiliasi langsung dengan proyek ini. Proyek ini dibuat untuk tujuan pembelajaran (*educational purpose*) dan *portfolio*.
 
 ## 📄 Lisensi
 

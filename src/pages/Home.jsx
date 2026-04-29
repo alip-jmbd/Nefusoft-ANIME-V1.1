@@ -141,12 +141,12 @@ const Home = () => {
 
   const handleShare = async (platform) => {
     const url = window.location.href;
-    const text = 'Ajak temanmu nonton anime favorit bareng di NefuSoft, gratis dan tanpa iklan!!';
+    const text = 'Ajak temanmu nonton anime favorit bareng di NimeStream, gratis dan tanpa iklan!!';
     const encodedText = encodeURIComponent(text);
     
     if (platform === 'api') {
       if (navigator.share) {
-        try { await navigator.share({ title: 'NefuSoft', text: text, url }); } catch (e) {}
+        try { await navigator.share({ title: 'NimeStream', text: text, url }); } catch (e) {}
       }
       return;
     }
@@ -230,7 +230,7 @@ const Home = () => {
            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
              <div>
                <h3 className="text-white font-black uppercase text-sm md:text-base mb-1 tracking-tight">Sebarkan Keseruan Ini!</h3>
-               <p className="text-white/60 text-[10px] md:text-xs font-medium">Ajak teman-temanmu marathon anime favorit bareng di NefuSoft.</p>
+               <p className="text-white/60 text-[10px] md:text-xs font-medium">Ajak teman-temanmu marathon anime favorit bareng di NimeStream.</p>
              </div>
              <div className="flex gap-2.5 flex-wrap">
                 <button onClick={() => handleShare('copy')} className="bg-white/5 hover:bg-[#F6CF80] hover:text-black hover:border-[#F6CF80] border border-white/10 px-4 py-2 rounded-lg flex items-center gap-2 transition-all font-black text-[11px] text-white">

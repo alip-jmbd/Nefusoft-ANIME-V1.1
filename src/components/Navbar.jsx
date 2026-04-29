@@ -67,7 +67,7 @@ const Navbar = () => {
       <nav className="fixed top-2 inset-x-4 z-[100] max-w-7xl mx-auto">
         <div className="bg-black/60 h-16 px-6 rounded-2xl flex items-center justify-between border border-white/5 shadow-lg relative overflow-hidden">
           <div className="flex items-center shrink-0 z-10">
-            <img src="https://raw.githubusercontent.com/alip-jmbd/alipp/main/icon-rbg.png" className="w-10 md:w-14 aspect-square object-contain cursor-pointer" alt="NefuSoft" onClick={() => navigate('/home')} />
+            <img src="https://raw.githubusercontent.com/alip-jmbd/alipp/main/icon-rbg.png" className="w-10 md:w-14 aspect-square object-contain cursor-pointer" alt="NimeStream" onClick={() => navigate('/home')} />
           </div>
           
           <div className="flex items-center justify-end flex-1 gap-3 z-10">
