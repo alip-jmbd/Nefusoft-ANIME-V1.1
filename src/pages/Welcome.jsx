@@ -45,7 +45,7 @@ const Welcome = () => {
     <div className="min-h-screen bg-[#0a0a0c] flex flex-col text-white">
       <nav className="w-full h-24 px-6 md:px-12 flex items-center justify-between shrink-0 z-50">
         <div className="flex items-center cursor-pointer" onClick={() => navigate('/home')}>
-          <img src="/img/nefusoft.webp" alt="NefuSoft Logo" width="100" height="100" className="w-16 md:w-24 object-contain" fetchPriority="high" />
+          <img src="/img/nefusoft.webp" alt="NimeStream Logo" width="100" height="100" className="w-16 md:w-24 object-contain" fetchPriority="high" />
         </div>
         <div className="flex gap-4 md:gap-6 bg-transparent border border-white/10 px-5 py-2.5 rounded-full shadow-lg">
           {navLinks.map((link, i) => (
@@ -90,13 +90,13 @@ const Welcome = () => {
 
         <div className="mt-16 mb-24 flex flex-col items-center text-center px-6">
           <img src="/img/kaguya.webp" alt="Kaguya" width="120" height="120" loading="lazy" decoding="async" className="w-28 md:w-32 object-contain mb-6 drop-shadow-2xl" />
-          <h2 className="text-3xl md:text-5xl font-[900] tracking-tighter mb-5">Nefu<span className="text-[#F6CF80]">Soft</span></h2>
-          <p className="text-white/60 text-sm md:text-base font-medium leading-relaxed max-w-2xl">NefuSoft menyediakan akses menonton ribuan judul anime secara gratis tanpa gangguan iklan. Nikmati nonton anime subtitle indonesia dengan kualitas 360p hingga 1080p secara gratis dan nyaman!!</p>
+          <h2 className="text-3xl md:text-5xl font-[900] tracking-tighter mb-5">Nime<span className="text-[#F6CF80]">Stream</span></h2>
+          <p className="text-white/60 text-sm md:text-base font-medium leading-relaxed max-w-2xl">NimeStream menyediakan akses menonton ribuan judul anime secara gratis tanpa gangguan iklan. Nikmati nonton anime subtitle indonesia dengan kualitas 360p hingga 1080p secara gratis dan nyaman!!</p>
         </div>
       </main>
 
       <footer className="w-full py-8 px-6 border-t border-white/5 flex flex-col items-center">
-        <p className="text-[10px] md:text-[11px] text-white/50 font-bold leading-relaxed max-w-2xl text-center tracking-wide">NefuSoft adalah platform streaming anime pihak ketiga. Kami tidak mengunggah atau menyimpan file video apa pun di server kami. Semua konten disediakan oleh pihak ketiga yang tidak terafiliasi dengan kami.</p>
+        <p className="text-[10px] md:text-[11px] text-white/50 font-bold leading-relaxed max-w-2xl text-center tracking-wide">NimeStream adalah platform streaming anime pihak ketiga. Kami tidak mengunggah atau menyimpan file video apa pun di server kami. Semua konten disediakan oleh pihak ketiga yang tidak terafiliasi dengan kami.</p>
       </footer>
     </div>
   );
