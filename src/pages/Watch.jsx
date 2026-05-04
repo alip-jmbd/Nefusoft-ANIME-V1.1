@@ -148,7 +148,7 @@ const Watch = () => {
             index: ep.ch.replace(/\D/g, ''), // Extract number
             title: ep.ch,
             url: ep.url
-          })).reverse();
+          }));
 
           const normalizedAnime = {
             ...rawAnime,
@@ -158,7 +158,8 @@ const Watch = () => {
             episode_list: normalizedEpisodes,
             genre: (rawAnime.genre || []).join(', '),
             aired_start: rawAnime.published,
-            favorites: rawAnime.rating
+            favorites: rawAnime.rating,
+            synopsis: rawAnime.sinopsis
           };
 
           setAnime(normalizedAnime);
@@ -571,7 +572,7 @@ const Watch = () => {
                       <video
                         ref={videoRef}
                         src={getProxyUrl(selectedServer.link)}
-                        className={`w-full h-full object-contain relative z-10 ${!hasStarted ? 'opacity-0' : 'opacity-100'} pointer-events-none`}
+                        className={`w-full h-full object-contain relative z-10 ${hasStarted ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 pointer-events-none`}
                         onLoadedMetadata={() => {
                           if (videoRef.current) {
                             setDuration(videoRef.current.duration);
@@ -580,19 +581,21 @@ const Watch = () => {
                         }}
                         onCanPlay={() => {
                           setIsVideoReady(true);
-                          setShowControls(true);
-                          resetControlsTimeout();
-                          if (autoNext && !hasStarted) {
-                            videoRef.current.play().then(() => {
-                              setIsPlaying(true);
-                              setHasStarted(true);
-                              resetControlsTimeout();
-                            }).catch(() => {});
-                          }
+                        }}
+                        onPlay={() => {
+                          setIsPlaying(true);
+                          setHasStarted(true);
+                          setIsBuffering(false);
+                        }}
+                        onPause={() => {
+                          setIsPlaying(false);
                         }}
                         onTimeUpdate={handleTimeUpdate}
                         onWaiting={() => setIsBuffering(true)}
-                        onPlaying={() => setIsBuffering(false)}
+                        onPlaying={() => {
+                          setIsBuffering(false);
+                          setHasStarted(true);
+                        }}
                         onEnded={() => {
                           setIsPlaying(false);
                           if (autoNext && epIndex > 0) handleNext();
@@ -816,7 +819,7 @@ const Watch = () => {
             <div className="mb-8 bg-[#16161a] rounded-sm border border-white/5 p-4 md:p-6 shadow-xl">
               <h3 className="text-white font-black uppercase text-sm mb-4 tracking-wider">Daftar Episode</h3>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(45px,1fr))] gap-2 max-h-56 overflow-y-auto custom-scrollbar pr-2">
-                {[...episodes].reverse().map(ep => (
+              {episodes.map(ep => (
                   <button
                     key={ep.id}
                     onClick={() => {

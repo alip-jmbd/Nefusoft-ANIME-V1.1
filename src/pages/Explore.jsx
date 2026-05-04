@@ -86,13 +86,16 @@ const Explore = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    // New API doesn't seem to have a dedicated genre list endpoint like before
-    // We'll leave the state empty for now
-    setGenres([]);
+    const predefinedGenres = [
+      "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Harem", "Horror",
+      "Isekai", "Josei", "Music", "Mystery", "Psychological", "Romance", "Sci-Fi",
+      "Seinen", "Shoujo", "Shounen", "Slice of Life", "Sports", "Supernatural", "Thriller"
+    ].map((g, i) => ({ id: g, name: g }));
+    setGenres(predefinedGenres);
   }, []);
 
   useEffect(() => {
-    setPage(1); // New API uses 1-based pagination usually
+    setPage(1);
   },[query, selectedGenres]);
 
   useEffect(() => {
@@ -100,12 +103,11 @@ const Explore = () => {
     const fetchResults = async () => {
       setIsLoading(true);
       try {
-        let url = `/api/movies`; // fallback to movies
+        let url = `/api/latest?page=${page}`;
         if (query) {
           url = `/api/search?q=${encodeURIComponent(query)}`;
         } else if (selectedGenres.length > 0) {
-          // Genre filtering not directly supported in basic endpoint list
-          url = `/api/movies`;
+          url = `/api/search?q=${encodeURIComponent(selectedGenres[0])}`;
         }
         
         const res = await fetch(url).then(r => r.json());
