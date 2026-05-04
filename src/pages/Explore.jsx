@@ -86,16 +86,16 @@ const Explore = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    let isMounted = true;
-    fetch('/api/v1/genre')
-      .then(r => r.json())
-      .then(d => { if (isMounted) setGenres(d.data ||[]); })
-      .catch(() => {});
-    return () => { isMounted = false; };
+    const predefinedGenres = [
+      "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Harem", "Horror",
+      "Isekai", "Josei", "Music", "Mystery", "Psychological", "Romance", "Sci-Fi",
+      "Seinen", "Shoujo", "Shounen", "Slice of Life", "Sports", "Supernatural", "Thriller"
+    ].map((g, i) => ({ id: g, name: g }));
+    setGenres(predefinedGenres);
   }, []);
 
   useEffect(() => {
-    setPage(0);
+    setPage(1);
   },[query, selectedGenres]);
 
   useEffect(() => {
@@ -103,17 +103,33 @@ const Explore = () => {
     const fetchResults = async () => {
       setIsLoading(true);
       try {
-        let url = `/api/v1/popular?page=${page}`;
+        let url = `/api/latest?page=${page}`;
         if (query) {
-          url = `/api/v1/search?q=${encodeURIComponent(query)}&page=${page}`;
+          url = `/api/search?q=${encodeURIComponent(query)}`;
         } else if (selectedGenres.length > 0) {
-          const genreQuery = selectedGenres.map(id => `id=${id}`).join('&');
-          url = `/api/v1/genre?${genreQuery}&page=${page}`;
+          url = `/api/search?q=${encodeURIComponent(selectedGenres[0])}`;
         }
         
         const res = await fetch(url).then(r => r.json());
-        if (isMounted) setResults(res.data ||[]);
+        if (!isMounted) return;
+
+        let rawData = [];
+        if (query) {
+          rawData = res.data?.[0]?.result || [];
+        } else {
+          rawData = Array.isArray(res) ? res : (res.data || []);
+        }
+
+        const normalizedData = rawData.map(a => ({
+          id: a.id,
+          url: a.url,
+          title: a.judul || a.title,
+          image_poster: a.cover
+        }));
+
+        setResults(normalizedData);
       } catch (e) {
+        console.error("Explore fetch error:", e);
         if (isMounted) setResults([]);
       } finally {
         if (isMounted) setIsLoading(false);
@@ -160,7 +176,7 @@ const Explore = () => {
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(95px,1fr))] gap-3 px-2">
           {isLoading ? [...Array(18)].map((_, i) => <CardSkeleton key={`shimmer-${i}`} />) : results.map((a, index) => (
-            <AnimeCard key={a.id} a={a} index={index} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} />
+            <AnimeCard key={a.id} a={a} index={index} onClick={() => navigate(`/anime/${(a.url || '').replace(/\/$/, '')}`)} />
           ))}
         </div>
         
