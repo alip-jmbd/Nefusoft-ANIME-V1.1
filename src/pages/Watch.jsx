@@ -66,12 +66,11 @@ const formatTime = (timeInSeconds) => {
 
 const Watch = () => {
   const { slug, episode } = useParams();
-  const id = slug ? slug.split('-')[0] : null;
   const navigate = useNavigate();
 
   const [anime, setAnime] = useState(null);
   const [episodes, setEpisodes] = useState([]);
-  const[currentEpId, setCurrentEpId] = useState(null);
+  const [currentEpUrl, setCurrentEpUrl] = useState(null);
   const [servers, setServers] = useState([]);
   const[selectedServer, setSelectedServer] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -110,10 +109,10 @@ const Watch = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
     
     const updateMetaTags = (title, desc, image) => {
       document.title = title;
@@ -141,23 +140,53 @@ const Watch = () => {
     const fetchDetail = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/v1/detail?id=${id}`).then(r => r.json());
-        if (res.status && res.data) {
-          setAnime(res.data);
-          setEpisodes(res.data.episode_list ||[]);
+        const res = await fetch(`/api/detail?url=${slug}/`).then(r => r.json());
+        if (res.data && res.data[0]) {
+          const rawAnime = res.data[0];
+          const normalizedEpisodes = (rawAnime.chapter || []).map(ep => ({
+            id: ep.id,
+            index: ep.ch.replace(/\D/g, ''), // Extract number
+            title: ep.ch,
+            url: ep.url
+          })).reverse();
 
-          const shareTitle = `Tonton ${res.data.title} - NefuSoft`;
-          const shareDesc = res.data.synopsis ? res.data.synopsis.substring(0, 150) + '...' : 'Streaming anime subtitle Indonesia gratis.';
-          const shareImg = res.data.image_poster || res.data.image_cover;
+          const normalizedAnime = {
+            ...rawAnime,
+            title: rawAnime.judul,
+            image_poster: rawAnime.cover,
+            image_cover: rawAnime.cover,
+            episode_list: normalizedEpisodes,
+            genre: (rawAnime.genre || []).join(', '),
+            aired_start: rawAnime.published,
+            favorites: rawAnime.rating
+          };
+
+          setAnime(normalizedAnime);
+          setEpisodes(normalizedEpisodes);
+
+          const shareTitle = `Tonton ${normalizedAnime.title} - NefuSoft`;
+          const shareDesc = normalizedAnime.synopsis ? normalizedAnime.synopsis.substring(0, 150) + '...' : 'Streaming anime subtitle Indonesia gratis.';
+          const shareImg = normalizedAnime.image_poster || normalizedAnime.image_cover;
           
           updateMetaTags(shareTitle, shareDesc, shareImg);
         }
         
-        const recRes = await fetch('/api/v1/popular?page=1').then(r => r.json());
-        if (recRes.status && recRes.data) {
-          setRecommendations(recRes.data.slice(0, 5));
+        const recResRaw = await fetch('/api/movies').then(r => r.json());
+        if (Array.isArray(recResRaw)) {
+          const normalizedRecs = recResRaw.slice(0, 5).map(a => ({
+            id: a.id,
+            url: a.url,
+            title: a.judul,
+            image_poster: a.cover,
+            image_cover: a.cover,
+            type: 'MOVIE',
+            status: 'Completed'
+          }));
+          setRecommendations(normalizedRecs);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("Fetch detail error:", e);
+      }
       setIsLoading(false);
     };
     
@@ -170,21 +199,21 @@ const Watch = () => {
         'https://raw.githubusercontent.com/alip-jmbd/alipp/main/icons-full.jpg'
       );
     };
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     if (episodes.length > 0) {
-      let targetEp = episode ? episodes.find(e => e.index.toString() === episode) : episodes[episodes.length - 1];
-      if (targetEp && targetEp.id !== currentEpId) setCurrentEpId(targetEp.id);
+      let targetEp = episode ? episodes.find(e => e.index.toString() === episode) : episodes[0];
+      if (targetEp && targetEp.url !== currentEpUrl) setCurrentEpUrl(targetEp.url);
     }
-  }, [episode, episodes, currentEpId]);
+  }, [episode, episodes, currentEpUrl]);
 
   const changeEpisode = (epObj) => {
     navigate(`/anime/${slug}/${epObj.index}`, { replace: true });
   };
 
   useEffect(() => {
-    if (!currentEpId) return;
+    if (!currentEpUrl) return;
     const fetchEpisode = async () => {
       setIsEpLoading(true);
       setIsVideoReady(false);
@@ -194,23 +223,31 @@ const Watch = () => {
       setProgress(0);
       setCurrentTime(0);
       try {
-        const res = await fetch(`/api/v1/episode?id=${currentEpId}`).then(r => r.json());
-        if (res.status && res.data) {
-          const mp4Servers = (res.data.server ||[]).filter(s => s.link && s.type === 'direct' && !s.link.includes('embed=true') && s.link.split('?')[0].endsWith('.mp4'));
-          const uniqueServers = Array.from(new Map(mp4Servers.map(s => [s.quality, s])).values());
+        const res = await fetch(`/api/episode?url=${currentEpUrl}&reso=720p`).then(r => r.json());
+        if (res.data && res.data[0]) {
+          const epData = res.data[0];
+          const streamLinks = (epData.stream || []).filter(s => s.link && !s.link.includes('m3u8'));
+
+          const uniqueServers = streamLinks.map(s => ({
+            id: s.id,
+            quality: s.reso,
+            link: s.link
+          }));
           
           setServers(uniqueServers);
           if (uniqueServers.length > 0) {
-            setSelectedServer(uniqueServers.find(s => s.quality === '720p') || uniqueServers.reduce((p, c) => (parseInt(c.quality) > parseInt(p.quality) ? c : p)));
+            setSelectedServer(uniqueServers[0]);
           } else {
             setSelectedServer(null);
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("Fetch episode error:", e);
+      }
       setIsEpLoading(false);
     };
     fetchEpisode();
-  }, [currentEpId]);
+  }, [currentEpUrl]);
 
   const resetControlsTimeout = () => {
     setShowControls(true);
@@ -387,8 +424,8 @@ const Watch = () => {
 
   const getProxyUrl = (url) => url ? `https://cf.elainaa.workers.dev/${url}` : '';
 
-  const epIndex = episodes.findIndex(e => e.id === currentEpId);
-  const currentEpNum = episodes.find(e => e.id === currentEpId)?.index || '0';
+  const epIndex = episodes.findIndex(e => e.url === currentEpUrl);
+  const currentEpNum = episodes.find(e => e.url === currentEpUrl)?.index || '0';
   
   const toggleAutoNext = () => {
     setAutoNext(prev => {
@@ -785,7 +822,7 @@ const Watch = () => {
                     onClick={() => {
                       changeEpisode(ep);
                     }}
-                    className={`aspect-square flex items-center justify-center rounded-sm text-xs font-black transition-all shadow-sm ${currentEpId === ep.id ? 'bg-[#F6CF80] text-black shadow-[0_0_15px_rgba(246,207,128,0.4)]' : 'bg-[#0a0a0c] border border-white/5 text-white/60 hover:border-white/20 hover:text-white hover:bg-white/5'}`}
+                      className={`aspect-square flex items-center justify-center rounded-sm text-xs font-black transition-all shadow-sm ${currentEpUrl === ep.url ? 'bg-[#F6CF80] text-black shadow-[0_0_15px_rgba(246,207,128,0.4)]' : 'bg-[#0a0a0c] border border-white/5 text-white/60 hover:border-white/20 hover:text-white hover:bg-white/5'}`}
                   >
                     {ep.index}
                   </button>
@@ -854,7 +891,7 @@ const Watch = () => {
             <h3 className="text-white font-black uppercase text-sm mb-5 tracking-wider">Rekomendasi Lainnya</h3>
             <div className="flex flex-col gap-3">
               {recommendations.map((a) => (
-                <div key={a.id} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} className="group cursor-pointer relative h-20 md:h-24 rounded-sm bg-[#16161a] border border-white/5 flex items-center px-4 overflow-hidden transition-transform active:scale-[0.98]">
+                <div key={a.id} onClick={() => navigate(`/anime/${(a.url || '').replace(/\/$/, '')}`)} className="group cursor-pointer relative h-20 md:h-24 rounded-sm bg-[#16161a] border border-white/5 flex items-center px-4 overflow-hidden transition-transform active:scale-[0.98]">
                   <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-1/3 z-0">
                     <div className="absolute inset-0 bg-gradient-to-r from-[#16161a] via-[#16161a]/80 to-transparent z-10"></div>
                     <img src={a.image_cover || a.image_poster} referrerPolicy="no-referrer" className="w-full h-full object-cover opacity-40 group-hover:opacity-80 transition-opacity duration-500" />

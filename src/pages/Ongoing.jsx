@@ -40,8 +40,16 @@ const Ongoing = () => {
     const fetchPage = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/v1/ongoing?page=0`).then(r => r.json());
-        if (isMounted) setResults(res.data ||[]);
+        const res = await fetch(`/api/latest?page=1`).then(r => r.json());
+        if (!isMounted) return;
+
+        const normalizedData = (res || []).map(a => ({
+          id: a.id,
+          url: a.url,
+          title: a.judul,
+          image_poster: a.cover
+        }));
+        setResults(normalizedData);
       } catch (e) {
         if (isMounted) setResults([]);
       } finally {
@@ -69,7 +77,7 @@ const Ongoing = () => {
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(95px,1fr))] gap-3 px-2 mb-10">
           {isLoading ? [...Array(18)].map((_, i) => <CardSkeleton key={`shimmer-${i}`} />) : results.map((a, index) => (
-            <AnimeCard key={a.id} a={a} index={index} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} />
+            <AnimeCard key={a.id} a={a} index={index} onClick={() => navigate(`/anime/${(a.url || '').replace(/\/$/, '')}`)} />
           ))}
         </div>
       </div>

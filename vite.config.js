@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api.nefusoft.cloud',
+        target: 'https://dev.nefusoft.cloud',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       }

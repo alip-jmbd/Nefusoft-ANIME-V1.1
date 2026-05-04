@@ -34,26 +34,13 @@ const ScheduleSkeleton = () => (
 );
 
 const ScheduleCard = ({ a, onClick, index }) => {
-  const [ep, setEp] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
-  const timeText = a.key_time ? a.key_time.split(' ')[1].substring(0, 5) : "--:--";
+  const timeText = "--:--"; // New API doesn't have explicit key_time in schedule list
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), index * 50);
     return () => clearTimeout(timer);
   }, [index]);
-
-  useEffect(() => {
-    let mounted = true;
-    fetch(`/api/v1/detail?id=${a.id}`)
-      .then(res => res.json())
-      .then(d => {
-        if (mounted && d.data?.episode_list?.[0]) {
-          setEp(d.data.episode_list[0].index);
-        }
-      }).catch(() => null);
-    return () => { mounted = false; };
-  },[a.id]);
 
   return (
     <div className={`flex items-stretch gap-4 md:gap-6 relative group w-full mb-4 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 blur-none translate-y-0' : 'opacity-0 blur-xl translate-y-8'}`}>
@@ -68,11 +55,6 @@ const ScheduleCard = ({ a, onClick, index }) => {
         <div onClick={onClick} className="relative rounded-xl flex p-3 md:p-4 gap-4 md:gap-5 cursor-pointer transition-all active:scale-[0.98] bg-[#16161a] border border-white/5 hover:border-[#F6CF80]/30 group/card overflow-hidden shadow-xl">
           <img src={a.image_poster} referrerPolicy="no-referrer" className="w-20 md:w-24 aspect-[3/4] object-cover rounded-md shadow-2xl shrink-0 group-hover/card:scale-105 transition-transform duration-500 relative z-10" />
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative z-10">
-            <div className="mb-2">
-              <span className="bg-[#F6CF80] text-black text-[9px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider">
-                {ep ? `Episode Terakhir : ${ep}` : 'Menunggu Update'}
-              </span>
-            </div>
             <h3 className="font-bold text-sm md:text-base text-white line-clamp-2 mb-2 group-hover/card:text-[#F6CF80] transition-colors">{a.title}</h3>
             <div className="flex flex-col gap-1.5 text-[10px] md:text-xs text-white/60">
               <div className="flex items-start gap-2">
@@ -129,9 +111,25 @@ const Schedule = () => {
     const fetchSchedule = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch('/api/v1/schedule').then(r => r.json());
-        if (isMounted) setSchedule(res.data || {});
+        const res = await fetch('/api/schedule').then(r => r.json());
+        if (!isMounted) return;
+
+        const schData = {};
+        if (res.data && Array.isArray(res.data)) {
+          res.data.forEach(item => {
+            const dayKey = item.day.toUpperCase();
+            schData[dayKey] = (item.animeList || []).map(a => ({
+              id: a.id,
+              url: a.link,
+              title: a.anime_name,
+              image_poster: a.cover,
+              genre: "" // Not available in flat list
+            }));
+          });
+        }
+        setSchedule(schData);
       } catch (e) {
+        console.error("Fetch schedule error:", e);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -174,7 +172,7 @@ const Schedule = () => {
                 key={`${a.id}-${index}`} 
                 a={a} 
                 index={index}
-                onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, { state: { latestEp: true } })} 
+                onClick={() => navigate(`/anime/${(a.url || '').replace(/\/$/, '')}`, { state: { latestEp: true } })}
               />
             )) : (
               <div className="py-20 flex flex-col items-center justify-center text-center">
