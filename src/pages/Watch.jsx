@@ -66,7 +66,6 @@ const formatTime = (timeInSeconds) => {
 
 const Watch = () => {
   const { slug, episode } = useParams();
-  const id = slug ? slug.split('-')[0] : null;
   const navigate = useNavigate();
 
   const [anime, setAnime] = useState(null);
@@ -110,10 +109,10 @@ const Watch = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
     
     const updateMetaTags = (title, desc, image) => {
       document.title = title;
@@ -141,23 +140,46 @@ const Watch = () => {
     const fetchDetail = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/v1/detail?id=${id}`).then(r => r.json());
-        if (res.status && res.data) {
-          setAnime(res.data);
-          setEpisodes(res.data.episode_list ||[]);
+        const res = await fetch(`/api/detail?url=${slug}`).then(r => r.json());
+        if (res.data && res.data[0]) {
+          const d = res.data[0];
+          const mappedAnime = {
+            ...d,
+            title: d.judul,
+            image_poster: d.cover,
+            image_cover: d.cover,
+            synopsis: d.sinopsis,
+            episode_list: (d.chapter || []).map(c => ({
+              id: c.url,
+              index: c.index,
+              title: c.title
+            }))
+          };
+          setAnime(mappedAnime);
+          setEpisodes(mappedAnime.episode_list);
 
-          const shareTitle = `Tonton ${res.data.title} - NefuSoft`;
-          const shareDesc = res.data.synopsis ? res.data.synopsis.substring(0, 150) + '...' : 'Streaming anime subtitle Indonesia gratis.';
-          const shareImg = res.data.image_poster || res.data.image_cover;
+          const shareTitle = `Tonton ${mappedAnime.title} - NefuSoft`;
+          const shareDesc = mappedAnime.synopsis ? mappedAnime.synopsis.substring(0, 150) + '...' : 'Streaming anime subtitle Indonesia gratis.';
+          const shareImg = mappedAnime.image_poster;
           
           updateMetaTags(shareTitle, shareDesc, shareImg);
         }
         
-        const recRes = await fetch('/api/v1/popular?page=1').then(r => r.json());
-        if (recRes.status && recRes.data) {
-          setRecommendations(recRes.data.slice(0, 5));
+        const recRes = await fetch('/api/movies?page=1').then(r => r.json());
+        if (recRes && Array.isArray(recRes)) {
+          const mappedRec = recRes.slice(0, 5).map(a => ({
+            id: a.url,
+            title: a.judul,
+            image_poster: a.cover,
+            image_cover: a.cover,
+            type: "TV",
+            status: "Ongoing"
+          }));
+          setRecommendations(mappedRec);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(e);
+      }
       setIsLoading(false);
     };
     
@@ -170,11 +192,11 @@ const Watch = () => {
         'https://raw.githubusercontent.com/alip-jmbd/alipp/main/icons-full.jpg'
       );
     };
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     if (episodes.length > 0) {
-      let targetEp = episode ? episodes.find(e => e.index.toString() === episode) : episodes[episodes.length - 1];
+      let targetEp = episode ? episodes.find(e => e.index.toString() === episode) : episodes[0]; // New API is desc, index 0 is latest
       if (targetEp && targetEp.id !== currentEpId) setCurrentEpId(targetEp.id);
     }
   }, [episode, episodes, currentEpId]);
@@ -194,19 +216,27 @@ const Watch = () => {
       setProgress(0);
       setCurrentTime(0);
       try {
-        const res = await fetch(`/api/v1/episode?id=${currentEpId}`).then(r => r.json());
-        if (res.status && res.data) {
-          const mp4Servers = (res.data.server ||[]).filter(s => s.link && s.type === 'direct' && !s.link.includes('embed=true') && s.link.split('?')[0].endsWith('.mp4'));
-          const uniqueServers = Array.from(new Map(mp4Servers.map(s => [s.quality, s])).values());
+        const res = await fetch(`/api/episode?url=${currentEpId}&reso=720p`).then(r => r.json());
+        if (res.data && res.data[0]) {
+          const streamData = res.data[0].stream || [];
+          const mp4Servers = streamData.filter(s => s.link && s.link.split('?')[0].endsWith('.mp4'));
+
+          const uniqueServers = mp4Servers.map((s, idx) => ({
+            id: s.id || idx,
+            quality: s.reso,
+            link: s.link
+          }));
           
           setServers(uniqueServers);
           if (uniqueServers.length > 0) {
-            setSelectedServer(uniqueServers.find(s => s.quality === '720p') || uniqueServers.reduce((p, c) => (parseInt(c.quality) > parseInt(p.quality) ? c : p)));
+            setSelectedServer(uniqueServers.find(s => s.quality === '720p') || uniqueServers[0]);
           } else {
             setSelectedServer(null);
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(e);
+      }
       setIsEpLoading(false);
     };
     fetchEpisode();
@@ -779,7 +809,7 @@ const Watch = () => {
             <div className="mb-8 bg-[#16161a] rounded-sm border border-white/5 p-4 md:p-6 shadow-xl">
               <h3 className="text-white font-black uppercase text-sm mb-4 tracking-wider">Daftar Episode</h3>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(45px,1fr))] gap-2 max-h-56 overflow-y-auto custom-scrollbar pr-2">
-                {[...episodes].reverse().map(ep => (
+                {episodes.map(ep => (
                   <button
                     key={ep.id}
                     onClick={() => {
@@ -820,9 +850,9 @@ const Watch = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-[10px] md:text-xs">
                       <div className="flex border-b border-white/5 pb-2"><span className="text-white/40 font-black uppercase tracking-widest w-24 text-left">Studio</span><span className="text-white/90 font-bold flex-1 text-right md:text-left">{anime.studio || '?'}</span></div>
-                      <div className="flex border-b border-white/5 pb-2"><span className="text-white/40 font-black uppercase tracking-widest w-24 text-left">Tahun</span><span className="text-white/90 font-bold flex-1 text-right md:text-left">{anime.year || '?'}</span></div>
-                      <div className="flex border-b border-white/5 pb-2"><span className="text-white/40 font-black uppercase tracking-widest w-24 text-left">Genre</span><span className="text-[#F6CF80] font-bold flex-1 text-right md:text-left">{anime.genre?.replace(/,/g, ', ')}</span></div>
-                      <div className="flex border-b border-white/5 pb-2"><span className="text-white/40 font-black uppercase tracking-widest w-24 text-left">Tayang</span><span className="text-white/90 font-bold flex-1 text-right md:text-left">{anime.day || '?'}</span></div>
+                      <div className="flex border-b border-white/5 pb-2"><span className="text-white/40 font-black uppercase tracking-widest w-24 text-left">Tahun</span><span className="text-white/90 font-bold flex-1 text-right md:text-left">{anime.rilis || '?'}</span></div>
+                      <div className="flex border-b border-white/5 pb-2"><span className="text-white/40 font-black uppercase tracking-widest w-24 text-left">Genre</span><span className="text-[#F6CF80] font-bold flex-1 text-right md:text-left">{Array.isArray(anime.genre) ? anime.genre.join(', ') : anime.genre?.replace(/,/g, ', ')}</span></div>
+                      <div className="flex border-b border-white/5 pb-2"><span className="text-white/40 font-black uppercase tracking-widest w-24 text-left">Rating</span><span className="text-white/90 font-bold flex-1 text-right md:text-left">{anime.rating || '?'}</span></div>
                     </div>
                   </div>
                 </div>
@@ -854,7 +884,7 @@ const Watch = () => {
             <h3 className="text-white font-black uppercase text-sm mb-5 tracking-wider">Rekomendasi Lainnya</h3>
             <div className="flex flex-col gap-3">
               {recommendations.map((a) => (
-                <div key={a.id} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} className="group cursor-pointer relative h-20 md:h-24 rounded-sm bg-[#16161a] border border-white/5 flex items-center px-4 overflow-hidden transition-transform active:scale-[0.98]">
+                <div key={a.id} onClick={() => navigate(`/anime/${a.id.replace(/\/$/, '')}`)} className="group cursor-pointer relative h-20 md:h-24 rounded-sm bg-[#16161a] border border-white/5 flex items-center px-4 overflow-hidden transition-transform active:scale-[0.98]">
                   <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-1/3 z-0">
                     <div className="absolute inset-0 bg-gradient-to-r from-[#16161a] via-[#16161a]/80 to-transparent z-10"></div>
                     <img src={a.image_cover || a.image_poster} referrerPolicy="no-referrer" className="w-full h-full object-cover opacity-40 group-hover:opacity-80 transition-opacity duration-500" />

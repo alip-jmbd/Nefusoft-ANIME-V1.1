@@ -27,8 +27,8 @@ const Navbar = () => {
       if (searchQuery.length > 2) {
         setIsLiveLoading(true);
         try {
-          const res = await fetch(`/api/v1/search?q=${encodeURIComponent(searchQuery)}`).then(r => r.json());
-          setLiveResults(res.data || []);
+          const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`).then(r => r.json());
+          setLiveResults(res.data?.[0]?.result || []);
         } catch (e) {
           setLiveResults([]);
         }
@@ -106,11 +106,11 @@ const Navbar = () => {
               <div className="p-6 text-center text-[#F6CF80] text-xs font-bold">mencari...</div>
             ) : liveResults.length > 0 ? (
               liveResults.map(r => (
-                <div key={r.id} onClick={() => { navigate(`/anime/${r.id}-${(r.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`); setIsSearchOpen(false); }} className="flex items-center gap-4 p-3 hover:bg-white/5 cursor-pointer border-b border-white/5 transition-colors">
-                  <img src={r.image_poster} referrerPolicy="no-referrer" className="w-10 aspect-[3/4.5] object-cover rounded-md shadow-md" />
+                <div key={r.id} onClick={() => { navigate(`/anime/${r.url.replace(/\/$/, '')}`); setIsSearchOpen(false); }} className="flex items-center gap-4 p-3 hover:bg-white/5 cursor-pointer border-b border-white/5 transition-colors">
+                  <img src={r.cover} referrerPolicy="no-referrer" className="w-10 aspect-[3/4.5] object-cover rounded-md shadow-md" />
                   <div className="flex flex-col">
-                    <span className="text-white font-bold text-xs line-clamp-1">{r.title}</span>
-                    <span className="text-white/40 font-bold text-[9px] mt-1">{r.type} • {r.status}</span>
+                    <span className="text-white font-bold text-xs line-clamp-1">{r.judul}</span>
+                    <span className="text-white/40 font-bold text-[9px] mt-1">{r.status}</span>
                   </div>
                 </div>
               ))

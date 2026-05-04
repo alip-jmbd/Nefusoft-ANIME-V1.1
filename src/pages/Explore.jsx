@@ -86,12 +86,22 @@ const Explore = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    let isMounted = true;
-    fetch('/api/v1/genre')
-      .then(r => r.json())
-      .then(d => { if (isMounted) setGenres(d.data ||[]); })
-      .catch(() => {});
-    return () => { isMounted = false; };
+    const hardcodedGenres = [
+      { id: "Action", name: "Action" },
+      { id: "Adventure", name: "Adventure" },
+      { id: "Comedy", name: "Comedy" },
+      { id: "Drama", name: "Drama" },
+      { id: "Fantasy", name: "Fantasy" },
+      { id: "Horror", name: "Horror" },
+      { id: "Mystery", name: "Mystery" },
+      { id: "Romance", name: "Romance" },
+      { id: "Sci-Fi", name: "Sci-Fi" },
+      { id: "Slice of Life", name: "Slice of Life" },
+      { id: "Sports", name: "Sports" },
+      { id: "Supernatural", name: "Supernatural" },
+      { id: "Thriller", name: "Thriller" }
+    ];
+    setGenres(hardcodedGenres);
   }, []);
 
   useEffect(() => {
@@ -103,16 +113,30 @@ const Explore = () => {
     const fetchResults = async () => {
       setIsLoading(true);
       try {
-        let url = `/api/v1/popular?page=${page}`;
+        let url = `/api/movies?page=${page + 1}`;
         if (query) {
-          url = `/api/v1/search?q=${encodeURIComponent(query)}&page=${page}`;
+          url = `/api/search?q=${encodeURIComponent(query)}&page=${page + 1}`;
         } else if (selectedGenres.length > 0) {
-          const genreQuery = selectedGenres.map(id => `id=${id}`).join('&');
-          url = `/api/v1/genre?${genreQuery}&page=${page}`;
+          // New API doesn't seem to have multi-genre filter via ID, fallback to searching for the first selected genre
+          url = `/api/search?q=${encodeURIComponent(selectedGenres[0])}&page=${page + 1}`;
         }
         
         const res = await fetch(url).then(r => r.json());
-        if (isMounted) setResults(res.data ||[]);
+        if (isMounted) {
+          let rawResults = [];
+          if (query || selectedGenres.length > 0) {
+            rawResults = res.data?.[0]?.result || [];
+          } else {
+            rawResults = res || [];
+          }
+
+          const mapped = rawResults.map(a => ({
+            id: a.url,
+            title: a.judul,
+            image_poster: a.cover
+          }));
+          setResults(mapped);
+        }
       } catch (e) {
         if (isMounted) setResults([]);
       } finally {
@@ -160,7 +184,7 @@ const Explore = () => {
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(95px,1fr))] gap-3 px-2">
           {isLoading ? [...Array(18)].map((_, i) => <CardSkeleton key={`shimmer-${i}`} />) : results.map((a, index) => (
-            <AnimeCard key={a.id} a={a} index={index} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} />
+            <AnimeCard key={a.id} a={a} index={index} onClick={() => navigate(`/anime/${a.id.replace(/\/$/, '')}`)} />
           ))}
         </div>
         

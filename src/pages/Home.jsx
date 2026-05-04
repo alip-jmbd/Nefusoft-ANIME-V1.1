@@ -59,15 +59,37 @@ const Home = () => {
       setIsLoading(true);
       try {
         const[schRes, ongRes, popRes] = await Promise.all([
-          fetch('/api/v1/schedule').then(r => r.json()),
-          fetch('/api/v1/ongoing').then(r => r.json()),
-          fetch('/api/v1/popular').then(r => r.json())
+          fetch('/api/schedule').then(r => r.json()),
+          fetch('/api/latest?page=1').then(r => r.json()),
+          fetch('/api/movies?page=1').then(r => r.json())
         ]);
         if (!isMounted) return;
         
-        const schData = schRes.data || {};
-        const ongData = ongRes.data ||[];
-        const popData = popRes.data ||[];
+        const schRaw = schRes.data || [];
+        const schData = {};
+        schRaw.forEach(item => {
+          schData[item.day.toUpperCase()] = (item.animeList || []).map(a => ({
+            id: a.link,
+            title: a.anime_name,
+            image_poster: a.cover,
+            image_cover: a.cover,
+            status: "ONGOING"
+          }));
+        });
+
+        const ongData = (ongRes || []).map(a => ({
+          id: a.url,
+          title: a.judul,
+          image_poster: a.cover,
+          synopsis: a.sinopsis
+        }));
+
+        const popData = (popRes || []).map(a => ({
+          id: a.url,
+          title: a.judul,
+          image_cover: a.cover,
+          image_poster: a.cover
+        }));
         
         const shuffledOngoing = shuffleArray(ongData);
 
@@ -76,6 +98,7 @@ const Home = () => {
         setPopular(popData);
         window.__NEFUSOFT_CACHE__ = { schedule: schData, ongoing: shuffledOngoing, popular: popData };
       } catch (e) {
+        console.error(e);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -197,9 +220,9 @@ const Home = () => {
                   <img src={a.image_poster || a.image_cover} referrerPolicy="no-referrer" className="w-24 md:w-40 aspect-[3/4.2] object-cover rounded-md shadow-2xl shrink-0" />
                   <div className="flex flex-col text-left mb-1 md:mb-2 gap-1 md:gap-1.5 flex-1 min-w-0">
                     <h2 className="text-lg md:text-3xl font-black text-white tracking-tight leading-tight line-clamp-2">{a.title}</h2>
-                    <p className="text-[10px] md:text-xs text-white/50 line-clamp-2 max-w-2xl leading-relaxed">{a.synopsis}</p>
+                    {a.synopsis && <p className="text-[10px] md:text-xs text-white/50 line-clamp-2 max-w-2xl leading-relaxed">{a.synopsis}</p>}
                     <div className="flex items-center gap-2 mt-1 md:mt-2">
-                      <button onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} className="h-8 md:h-10 px-5 md:px-6 bg-[#F6CF80] hover:bg-[#ebd59b] text-black rounded font-black tracking-wider text-[10px] md:text-xs flex items-center justify-center gap-1.5 shrink-0 transition-colors">
+                      <button onClick={() => navigate(`/anime/${a.id.replace(/\/$/, '')}`)} className="h-8 md:h-10 px-5 md:px-6 bg-[#F6CF80] hover:bg-[#ebd59b] text-black rounded font-black tracking-wider text-[10px] md:text-xs flex items-center justify-center gap-1.5 shrink-0 transition-colors">
                         <svg className="w-3.5 h-3.5 md:w-4 md:h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         <span className="leading-none pt-[1px] md:pt-[2px]">Tonton</span>
                       </button>
@@ -272,7 +295,7 @@ const Home = () => {
         <div ref={ongoingScrollRef} className="flex overflow-x-auto gap-3 pb-4 custom-scrollbar snap-x px-2">
           {isLoading ? [...Array(8)].map((_, i) => <CardSkeleton key={i} />) : 
             ongoing.map((a, i) => (
-              <div key={a.id || i} ref={el => ongoingCardRefs.current[i] = el} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} className="min-w-[105px] w-[105px] group cursor-pointer snap-start transition-all duration-700 opacity-0 blur-xl translate-y-4 active:scale-95 flex flex-col gap-2">
+              <div key={a.id || i} ref={el => ongoingCardRefs.current[i] = el} onClick={() => navigate(`/anime/${a.id.replace(/\/$/, '')}`)} className="min-w-[105px] w-[105px] group cursor-pointer snap-start transition-all duration-700 opacity-0 blur-xl translate-y-4 active:scale-95 flex flex-col gap-2">
                 <div className="relative aspect-[3/4.5] overflow-hidden bg-[#16161a] rounded-sm shadow-xl">
                   <img src={a.image_poster} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 </div>
@@ -300,7 +323,7 @@ const Home = () => {
         <div ref={todayScrollRef} className="flex overflow-x-auto gap-3 pb-4 custom-scrollbar snap-x px-2">
           {isLoading ?[...Array(8)].map((_, i) => <CardSkeleton key={i} />) : 
             todayAnime.map((a, i) => (
-              <div key={a.id || i} ref={el => todayCardRefs.current[i] = el} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} className="min-w-[105px] w-[105px] group cursor-pointer snap-start transition-all duration-700 opacity-0 blur-xl translate-y-4 active:scale-95 flex flex-col gap-2">
+              <div key={a.id || i} ref={el => todayCardRefs.current[i] = el} onClick={() => navigate(`/anime/${a.id.replace(/\/$/, '')}`)} className="min-w-[105px] w-[105px] group cursor-pointer snap-start transition-all duration-700 opacity-0 blur-xl translate-y-4 active:scale-95 flex flex-col gap-2">
                 <div className="relative aspect-[3/4.5] overflow-hidden bg-[#16161a] rounded-sm shadow-xl">
                   <img src={a.image_poster} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 </div>
@@ -319,7 +342,7 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-2">
           {isLoading ? [...Array(10)].map((_, i) => <div key={i} className="h-24 bg-[#16161a] rounded-xl relative overflow-hidden"><Shimmer /></div>) :
             popular.slice(0, 10).map((anime, index) => (
-              <div key={anime.id} ref={el => popularCardRefs.current[index] = el} onClick={() => navigate(`/anime/${anime.id}-${(anime.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} className={`group cursor-pointer relative h-24 md:h-28 rounded-2xl flex items-center px-5 overflow-hidden transition-all duration-700 opacity-0 blur-xl translate-y-4 active:scale-95 shadow-lg ${index < 3 ? 'bg-gradient-to-r from-[#F6CF80]/20 via-[#16161a] to-[#16161a] border border-[#F6CF80]/20' : 'bg-[#16161a] border border-white/5 hover:border-white/20'}`}>
+              <div key={anime.id} ref={el => popularCardRefs.current[index] = el} onClick={() => navigate(`/anime/${anime.id.replace(/\/$/, '')}`)} className={`group cursor-pointer relative h-24 md:h-28 rounded-2xl flex items-center px-5 overflow-hidden transition-all duration-700 opacity-0 blur-xl translate-y-4 active:scale-95 shadow-lg ${index < 3 ? 'bg-gradient-to-r from-[#F6CF80]/20 via-[#16161a] to-[#16161a] border border-[#F6CF80]/20' : 'bg-[#16161a] border border-white/5 hover:border-white/20'}`}>
                 <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-1/3 z-0">
                   <div className="absolute inset-0 bg-gradient-to-r from-[#16161a] via-[#16161a]/80 to-transparent z-10"></div>
                   <img src={anime.image_cover} referrerPolicy="no-referrer" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />

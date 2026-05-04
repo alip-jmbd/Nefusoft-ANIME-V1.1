@@ -45,11 +45,11 @@ const ScheduleCard = ({ a, onClick, index }) => {
 
   useEffect(() => {
     let mounted = true;
-    fetch(`/api/v1/detail?id=${a.id}`)
+    fetch(`/api/detail?url=${a.id.replace(/\/$/, '')}`)
       .then(res => res.json())
       .then(d => {
-        if (mounted && d.data?.episode_list?.[0]) {
-          setEp(d.data.episode_list[0].index);
+        if (mounted && d.data?.[0]?.chapter?.[0]) {
+          setEp(d.data[0].chapter[0].index);
         }
       }).catch(() => null);
     return () => { mounted = false; };
@@ -129,9 +129,22 @@ const Schedule = () => {
     const fetchSchedule = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch('/api/v1/schedule').then(r => r.json());
-        if (isMounted) setSchedule(res.data || {});
+        const res = await fetch('/api/schedule').then(r => r.json());
+        if (isMounted) {
+          const schRaw = res.data || [];
+          const schData = {};
+          schRaw.forEach(item => {
+            schData[item.day.toUpperCase()] = (item.animeList || []).map(a => ({
+              id: a.link,
+              title: a.anime_name,
+              image_poster: a.cover,
+              time: a.time || (a.key_time ? a.key_time.split(' ')[1].substring(0, 5) : "--:--")
+            }));
+          });
+          setSchedule(schData);
+        }
       } catch (e) {
+        console.error(e);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -174,7 +187,7 @@ const Schedule = () => {
                 key={`${a.id}-${index}`} 
                 a={a} 
                 index={index}
-                onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, { state: { latestEp: true } })} 
+                onClick={() => navigate(`/anime/${a.id.replace(/\/$/, '')}`, { state: { latestEp: true } })}
               />
             )) : (
               <div className="py-20 flex flex-col items-center justify-center text-center">
