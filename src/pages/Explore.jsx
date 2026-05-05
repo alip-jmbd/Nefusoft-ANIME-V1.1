@@ -78,7 +78,21 @@ const Explore = () => {
   const query = searchParams.get('q') || '';
   const navigate = useNavigate();
   
-  const[genres, setGenres] = useState([]);
+  const genres = [
+    { id: 'Action', name: 'Action' },
+    { id: 'Adventure', name: 'Adventure' },
+    { id: 'Comedy', name: 'Comedy' },
+    { id: 'Drama', name: 'Drama' },
+    { id: 'Fantasy', name: 'Fantasy' },
+    { id: 'Horror', name: 'Horror' },
+    { id: 'Mystery', name: 'Mystery' },
+    { id: 'Romance', name: 'Romance' },
+    { id: 'Sci-Fi', name: 'Sci-Fi' },
+    { id: 'Slice of Life', name: 'Slice of Life' },
+    { id: 'Sports', name: 'Sports' },
+    { id: 'Supernatural', name: 'Supernatural' },
+    { id: 'Suspense', name: 'Suspense' }
+  ];
   const [selectedGenres, setSelectedGenres] = useState([]);
   const[results, setResults] = useState([]);
   const [page, setPage] = useState(0);
@@ -86,12 +100,6 @@ const Explore = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    let isMounted = true;
-    fetch('/api/v1/genre')
-      .then(r => r.json())
-      .then(d => { if (isMounted) setGenres(d.data ||[]); })
-      .catch(() => {});
-    return () => { isMounted = false; };
   }, []);
 
   useEffect(() => {
@@ -103,16 +111,29 @@ const Explore = () => {
     const fetchResults = async () => {
       setIsLoading(true);
       try {
-        let url = `/api/v1/popular?page=${page}`;
+        let url = `/api/latest?page=${page + 1}`;
         if (query) {
-          url = `/api/v1/search?q=${encodeURIComponent(query)}&page=${page}`;
+          url = `/api/search?q=${encodeURIComponent(query)}&page=${page + 1}`;
         } else if (selectedGenres.length > 0) {
-          const genreQuery = selectedGenres.map(id => `id=${id}`).join('&');
-          url = `/api/v1/genre?${genreQuery}&page=${page}`;
+          // New API search by genre name
+          url = `/api/search?q=${encodeURIComponent(selectedGenres.join(' '))}&page=${page + 1}`;
         }
         
         const res = await fetch(url).then(r => r.json());
-        if (isMounted) setResults(res.data ||[]);
+        let data = [];
+        if (query || selectedGenres.length > 0) {
+          data = res.data?.[0]?.result || [];
+        } else {
+          data = res.data || res || [];
+        }
+
+        const mapped = data.map(a => ({
+          ...a,
+          title: a.judul || a.title,
+          image_poster: a.cover || a.image_poster || a.image_cover
+        }));
+
+        if (isMounted) setResults(mapped);
       } catch (e) {
         if (isMounted) setResults([]);
       } finally {
@@ -124,7 +145,7 @@ const Explore = () => {
   },[page, query, selectedGenres]);
 
   const toggleGenre = (id) => {
-    setSelectedGenres(prev => prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]);
+    setSelectedGenres(prev => prev.includes(id) ? prev.filter(g => g !== id) : [id]); // Only one genre at a time for better search results
   };
 
   return (
@@ -160,7 +181,7 @@ const Explore = () => {
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(95px,1fr))] gap-3 px-2">
           {isLoading ? [...Array(18)].map((_, i) => <CardSkeleton key={`shimmer-${i}`} />) : results.map((a, index) => (
-            <AnimeCard key={a.id} a={a} index={index} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} />
+            <AnimeCard key={a.id || a.url} a={a} index={index} onClick={() => navigate(`/anime/${a.url}`)} />
           ))}
         </div>
         

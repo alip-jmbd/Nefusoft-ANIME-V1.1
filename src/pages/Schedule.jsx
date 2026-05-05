@@ -45,15 +45,19 @@ const ScheduleCard = ({ a, onClick, index }) => {
 
   useEffect(() => {
     let mounted = true;
-    fetch(`/api/v1/detail?id=${a.id}`)
+    fetch(`/api/detail?url=${a.url}`)
       .then(res => res.json())
       .then(d => {
-        if (mounted && d.data?.episode_list?.[0]) {
-          setEp(d.data.episode_list[0].index);
+        const detail = d.data?.[0] || d.data;
+        if (mounted && detail?.chapter?.[0]) {
+          // Extract numeric episode from "ch" string like "12 (End)"
+          const ch = detail.chapter[0].ch;
+          const match = ch.match(/\d+/);
+          setEp(match ? match[0] : ch);
         }
       }).catch(() => null);
     return () => { mounted = false; };
-  },[a.id]);
+  },[a.url]);
 
   return (
     <div className={`flex items-stretch gap-4 md:gap-6 relative group w-full mb-4 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 blur-none translate-y-0' : 'opacity-0 blur-xl translate-y-8'}`}>
@@ -129,8 +133,17 @@ const Schedule = () => {
     const fetchSchedule = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch('/api/v1/schedule').then(r => r.json());
-        if (isMounted) setSchedule(res.data || {});
+        const res = await fetch('/api/schedule').then(r => r.json());
+        const transformed = {};
+        (res.data || []).forEach(item => {
+          transformed[item.day.toUpperCase()] = item.animeList.map(a => ({
+            ...a,
+            title: a.anime_name,
+            url: a.link,
+            image_poster: a.cover
+          }));
+        });
+        if (isMounted) setSchedule(transformed);
       } catch (e) {
       } finally {
         if (isMounted) setIsLoading(false);
@@ -171,10 +184,10 @@ const Schedule = () => {
           {isLoading ? <ScheduleSkeleton /> : (
             getAnimeList().length > 0 ? getAnimeList().map((a, index) => (
               <ScheduleCard 
-                key={`${a.id}-${index}`} 
+                key={`${a.url}-${index}`}
                 a={a} 
                 index={index}
-                onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, { state: { latestEp: true } })} 
+                onClick={() => navigate(`/anime/${a.url}`, { state: { latestEp: true } })}
               />
             )) : (
               <div className="py-20 flex flex-col items-center justify-center text-center">
