@@ -122,9 +122,17 @@ const Explore = () => {
         const res = await fetch(url).then(r => r.json());
         let data = [];
         if (query || selectedGenres.length > 0) {
-          data = res.data?.[0]?.result || [];
+          // If searching, the new API returns data in res.data[0].result
+          if (res.data && res.data[0] && res.data[0].result) {
+            data = res.data[0].result;
+          } else if (Array.isArray(res)) {
+            data = res;
+          } else {
+            data = res.data || [];
+          }
         } else {
-          data = res.data || res || [];
+          // If not searching, use direct array or res.data
+          data = Array.isArray(res) ? res : (res.data || []);
         }
 
         const mapped = data.map(a => ({

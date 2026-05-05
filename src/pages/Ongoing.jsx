@@ -41,7 +41,8 @@ const Ongoing = () => {
       setIsLoading(true);
       try {
         const res = await fetch(`/api/latest?page=1`).then(r => r.json());
-        const mapped = (res.data || []).map(a => ({
+        const rawList = Array.isArray(res) ? res : (res.data || []);
+        const mapped = rawList.map(a => ({
           ...a,
           title: a.judul || a.title,
           image_poster: a.cover || a.image_poster || a.image_cover

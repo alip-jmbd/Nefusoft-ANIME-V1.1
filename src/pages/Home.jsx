@@ -66,26 +66,32 @@ const Home = () => {
         if (!isMounted) return;
 
         const schData = {};
-        if (schRes.data && Array.isArray(schRes.data)) {
-          schRes.data.forEach(dayObj => {
-            schData[dayObj.day.toUpperCase()] = (dayObj.animeList || []).map(a => ({
-              id: a.id,
-              url: a.link,
-              title: a.anime_name,
-              image_poster: a.cover,
-              status: "ONGOING"
-            }));
+        const schRaw = Array.isArray(schRes) ? schRes : (schRes.data || []);
+        if (Array.isArray(schRaw)) {
+          schRaw.forEach(dayObj => {
+            if (dayObj.day && dayObj.animeList) {
+              schData[dayObj.day.toUpperCase()] = dayObj.animeList.map(a => ({
+                id: a.id,
+                url: a.link,
+                title: a.anime_name,
+                image_poster: a.cover,
+                status: "ONGOING"
+              }));
+            }
           });
         }
 
-        const mapData = (list) => (Array.isArray(list) ? list : []).map(a => ({
-          id: a.id,
-          url: a.url,
-          title: a.judul,
-          image_poster: a.cover,
-          image_cover: a.cover,
-          synopsis: a.sinopsis
-        }));
+        const mapData = (res) => {
+          const list = Array.isArray(res) ? res : (res.data || []);
+          return list.map(a => ({
+            id: a.id,
+            url: a.url,
+            title: a.judul || a.title,
+            image_poster: a.cover || a.image_poster,
+            image_cover: a.cover || a.image_cover,
+            synopsis: a.sinopsis || a.synopsis
+          }));
+        };
 
         const ongData = mapData(ongRes);
         const popData = mapData(popRes);

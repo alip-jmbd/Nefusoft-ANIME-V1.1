@@ -539,7 +539,7 @@ const Watch = () => {
                   {(() => {
                     if (isEpLoading || (!isVideoReady && !hasStarted)) {
                       return (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 pointer-events-none">
+                        <div className={`absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 pointer-events-none transition-opacity duration-500 ${isVideoReady ? 'opacity-0' : 'opacity-100'}`}>
                           <img src="/img/kaguya.webp" alt="Loading" className="w-24 md:w-32 animate-pulse mb-4 object-contain" />
                           <p className="text-[#F6CF80] text-xs md:text-sm font-bold text-center px-4 animate-pulse">sabar yaa, server kami butuh waktu untuk merespon 😖</p>
                         </div>
@@ -573,7 +573,6 @@ const Watch = () => {
                         onLoadedMetadata={() => {
                           if (videoRef.current) {
                             setDuration(videoRef.current.duration);
-                            setIsVideoReady(true);
                           }
                         }}
                         onCanPlay={() => {
@@ -590,7 +589,19 @@ const Watch = () => {
                         }}
                         onTimeUpdate={handleTimeUpdate}
                         onWaiting={() => setIsBuffering(true)}
-                        onPlaying={() => setIsBuffering(false)}
+                        onPlaying={() => {
+                          setIsBuffering(false);
+                          setIsVideoReady(true);
+                        }}
+                        onPlay={() => {
+                          setIsVideoReady(true);
+                        }}
+                        onError={() => {
+                          setIsEpLoading(false);
+                          setIsVideoReady(false);
+                          setToast('Gagal memuat video, coba ganti resolusi atau server.');
+                          setTimeout(() => setToast(''), 5000);
+                        }}
                         onEnded={() => {
                           setIsPlaying(false);
                           if (autoNext && epIndex > 0) handleNext();
