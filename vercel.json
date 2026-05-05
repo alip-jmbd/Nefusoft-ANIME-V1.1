@@ -5,17 +5,6 @@
       "destination": "https://cors.siputzx.my.id/https://dev.nefusoft.cloud/:path*"
     },
     {
-      "source": "/(.*\\.mp4)",
-      "has":[
-        {
-          "type": "query",
-          "key": "url",
-          "value": "(?<url>.*)"
-        }
-      ],
-      "destination": "https://cf.elainaa.workers.dev/:url"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

@@ -49,7 +49,9 @@ const ScheduleCard = ({ a, onClick, index }) => {
       .then(res => res.json())
       .then(d => {
         if (mounted && d.data?.[0]?.chapter?.[0]) {
-          setEp(d.data[0].chapter[0].index);
+          const latestCh = d.data[0].chapter[0].ch;
+          const num = latestCh.match(/\d+/)?.[0] || latestCh;
+          setEp(num);
         }
       }).catch(() => null);
     return () => { mounted = false; };
@@ -131,9 +133,8 @@ const Schedule = () => {
       try {
         const res = await fetch('/api/schedule').then(r => r.json());
         if (isMounted) {
-          const schRaw = res.data || [];
           const schData = {};
-          schRaw.forEach(item => {
+          (res || []).forEach(item => {
             schData[item.day.toUpperCase()] = (item.animeList || []).map(a => ({
               id: a.link,
               title: a.anime_name,

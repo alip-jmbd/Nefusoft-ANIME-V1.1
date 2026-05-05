@@ -151,8 +151,8 @@ const Watch = () => {
             synopsis: d.sinopsis,
             episode_list: (d.chapter || []).map(c => ({
               id: c.url,
-              index: c.index,
-              title: c.title
+              index: c.ch.match(/\d+/)?.[0] || c.ch,
+              title: c.ch
             }))
           };
           setAnime(mappedAnime);
@@ -196,8 +196,10 @@ const Watch = () => {
 
   useEffect(() => {
     if (episodes.length > 0) {
-      let targetEp = episode ? episodes.find(e => e.index.toString() === episode) : episodes[0]; // New API is desc, index 0 is latest
-      if (targetEp && targetEp.id !== currentEpId) setCurrentEpId(targetEp.id);
+      let targetEp = episode ? episodes.find(e => e.index.toString() === episode.toString()) : episodes[0];
+      if (targetEp && targetEp.id !== currentEpId) {
+        setCurrentEpId(targetEp.id);
+      }
     }
   }, [episode, episodes, currentEpId]);
 
@@ -415,7 +417,7 @@ const Watch = () => {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   },[]);
 
-  const getProxyUrl = (url) => url ? `https://cf.elainaa.workers.dev/${url}` : '';
+  const getProxyUrl = (url) => url ? `https://cors.siputzx.my.id/${url}` : '';
 
   const epIndex = episodes.findIndex(e => e.id === currentEpId);
   const currentEpNum = episodes.find(e => e.id === currentEpId)?.index || '0';
@@ -564,7 +566,7 @@ const Watch = () => {
                       <video
                         ref={videoRef}
                         src={getProxyUrl(selectedServer.link)}
-                        className={`w-full h-full object-contain relative z-10 ${!hasStarted ? 'opacity-0' : 'opacity-100'} pointer-events-none`}
+                        className={`w-full h-full object-contain relative z-10 ${(!hasStarted && !isPlaying) ? 'opacity-0' : 'opacity-100'} pointer-events-none`}
                         onLoadedMetadata={() => {
                           if (videoRef.current) {
                             setDuration(videoRef.current.duration);
@@ -576,16 +578,21 @@ const Watch = () => {
                           setShowControls(true);
                           resetControlsTimeout();
                           if (autoNext && !hasStarted) {
-                            videoRef.current.play().then(() => {
-                              setIsPlaying(true);
-                              setHasStarted(true);
-                              resetControlsTimeout();
-                            }).catch(() => {});
+                            videoRef.current.play().catch(() => {});
                           }
                         }}
                         onTimeUpdate={handleTimeUpdate}
                         onWaiting={() => setIsBuffering(true)}
-                        onPlaying={() => setIsBuffering(false)}
+                        onPlaying={() => {
+                          setIsBuffering(false);
+                          setIsPlaying(true);
+                          setHasStarted(true);
+                        }}
+                        onPlay={() => {
+                          setIsPlaying(true);
+                          setHasStarted(true);
+                        }}
+                        onPause={() => setIsPlaying(false)}
                         onEnded={() => {
                           setIsPlaying(false);
                           if (autoNext && epIndex > 0) handleNext();
