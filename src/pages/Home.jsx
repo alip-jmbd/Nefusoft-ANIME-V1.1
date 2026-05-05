@@ -82,11 +82,23 @@ const Home = () => {
         }
 
         const mapData = (res) => {
-          const list = Array.isArray(res) ? res : (res.data || []);
+          let list = [];
+          if (Array.isArray(res)) {
+            list = res;
+          } else if (res.data) {
+            if (Array.isArray(res.data)) {
+              if (res.data[0] && res.data[0].result) {
+                list = res.data[0].result;
+              } else {
+                list = res.data;
+              }
+            }
+          }
+
           return list.map(a => ({
             id: a.id,
             url: a.url,
-            title: a.judul || a.title,
+            title: a.judul || a.title || a.anime_name,
             image_poster: a.cover || a.image_poster,
             image_cover: a.cover || a.image_cover,
             synopsis: a.sinopsis || a.synopsis

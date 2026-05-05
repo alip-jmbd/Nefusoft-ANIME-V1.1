@@ -41,10 +41,23 @@ const Ongoing = () => {
       setIsLoading(true);
       try {
         const res = await fetch(`/api/latest?page=1`).then(r => r.json());
-        const rawList = Array.isArray(res) ? res : (res.data || []);
+        let rawList = [];
+        if (Array.isArray(res)) {
+          rawList = res;
+        } else if (res.data) {
+          if (Array.isArray(res.data)) {
+            // Check for nested result array like in search API
+            if (res.data[0] && res.data[0].result) {
+              rawList = res.data[0].result;
+            } else {
+              rawList = res.data;
+            }
+          }
+        }
+
         const mapped = rawList.map(a => ({
           ...a,
-          title: a.judul || a.title,
+          title: a.judul || a.title || a.anime_name,
           image_poster: a.cover || a.image_poster || a.image_cover
         }));
         if (isMounted) setResults(mapped);
