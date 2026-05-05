@@ -134,7 +134,8 @@ const Schedule = () => {
         const res = await fetch('/api/schedule').then(r => r.json());
         if (isMounted) {
           const schData = {};
-          (res || []).forEach(item => {
+          const rawList = res.data || res || [];
+          (rawList).forEach(item => {
             schData[item.day.toUpperCase()] = (item.animeList || []).map(a => ({
               id: a.link,
               title: a.anime_name,

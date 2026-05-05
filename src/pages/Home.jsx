@@ -66,7 +66,8 @@ const Home = () => {
         if (!isMounted) return;
         
         const schData = {};
-        (schRes || []).forEach(item => {
+        const rawSch = schRes.data || schRes || [];
+        (rawSch).forEach(item => {
           schData[item.day.toUpperCase()] = (item.animeList || []).map(a => ({
             id: a.link,
             title: a.anime_name,
