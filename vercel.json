@@ -2,7 +2,7 @@
   "rewrites":[
     {
       "source": "/api/:path*",
-      "destination": "https://api.nefusoft.cloud/:path*"
+      "destination": "https://cors.siputzx.my.id/https://dev.nefusoft.cloud/:path*"
     },
     {
       "source": "/(.*\\.mp4)",

@@ -65,7 +65,7 @@ Ikuti langkah-langkah berikut untuk menjalankan NefuSoft di perangkat Anda:
    ```
    Lalu isi file `.env` dengan *endpoint API*:
    ```env
-   VITE_API_BASE=https://api.nefusoft.cloud/v1
+   VITE_API_BASE=https://dev.nefusoft.cloud
    ```
 
 4. **Jalankan Development Server**
