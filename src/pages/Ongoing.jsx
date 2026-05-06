@@ -40,8 +40,27 @@ const Ongoing = () => {
     const fetchPage = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/v1/ongoing?page=0`).then(r => r.json());
-        if (isMounted) setResults(res.data ||[]);
+        const res = await fetch(`/api/latest?page=1`).then(r => r.json());
+        let rawList = [];
+        if (Array.isArray(res)) {
+          rawList = res;
+        } else if (res.data) {
+          if (Array.isArray(res.data)) {
+            // Check for nested result array like in search API
+            if (res.data[0] && res.data[0].result) {
+              rawList = res.data[0].result;
+            } else {
+              rawList = res.data;
+            }
+          }
+        }
+
+        const mapped = rawList.map(a => ({
+          ...a,
+          title: a.judul || a.title || a.anime_name,
+          image_poster: a.cover || a.image_poster || a.image_cover
+        }));
+        if (isMounted) setResults(mapped);
       } catch (e) {
         if (isMounted) setResults([]);
       } finally {
@@ -69,7 +88,7 @@ const Ongoing = () => {
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(95px,1fr))] gap-3 px-2 mb-10">
           {isLoading ? [...Array(18)].map((_, i) => <CardSkeleton key={`shimmer-${i}`} />) : results.map((a, index) => (
-            <AnimeCard key={a.id} a={a} index={index} onClick={() => navigate(`/anime/${a.id}-${(a.title||'').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)} />
+            <AnimeCard key={a.id || a.url} a={a} index={index} onClick={() => navigate(`/anime/${a.url}`)} />
           ))}
         </div>
       </div>
